@@ -48,16 +48,20 @@ function MainView(props: { textures: { bunny: Texture }; bunny: Bunny }) {
     app.stage.addChild(bunny);
     const platform = new Platform(200, 400, 300, 20, props.textures.bunny);
     const platform2 = new Platform(100, 500, 300, 20, props.textures.bunny);
+    const platform3 = new Platform(400, 200, 300, 20, props.textures.bunny);
+    const platform4 = new Platform(50, 300, 300, 20, props.textures.bunny);
     app.stage.addChild(platform.getSprite());
     app.stage.addChild(platform2.getSprite());
-    const platforms = [platform, platform2];
+    app.stage.addChild(platform3.getSprite());
+    app.stage.addChild(platform4.getSprite());
+    const platforms = [platform, platform2, platform3, platform4];
 
     // Listen for frame updates
-    app.ticker.add(() => {
+    app.ticker.add((delta) => {
         if (checkCollisions(props.bunny, platforms)) {
             props.bunny.resetY();
         }
-        props.bunny.tick();
+        props.bunny.tick(delta);
     });
 
     return <div id="main-view"></div>;

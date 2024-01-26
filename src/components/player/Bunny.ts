@@ -20,8 +20,9 @@ export class Bunny {
                     this.speedY = -2;
                     this.airJumps -= 1;
                 }
-            } else if (e.code === 'ArrowDown') this.speedY += 2;
-            else if (e.code === 'ArrowLeft') {
+            } else if (e.code === 'ArrowDown') {
+                this.speedY += 2;
+            } else if (e.code === 'ArrowLeft') {
                 this.leftDown = true;
             } else if (e.code === 'ArrowRight') {
                 this.rightDown = true;
@@ -37,7 +38,7 @@ export class Bunny {
         });
     }
 
-    tick() {
+    tick(delta: number) {
         if (
             (this.leftDown && !this.rightDown) ||
             (!this.leftDown && this.rightDown)
@@ -46,14 +47,16 @@ export class Bunny {
         }
 
         if (this.speedX != 0) {
-            this.sprite.x += this.speedX;
+            this.sprite.x += this.speedX * delta;
             this.speedX *= 0.5;
         }
         this.sprite.y += this.speedY;
         if (this.speedY > 0) {
-            this.speedY += 0.04;
+            if (this.speedY < 3) {
+                this.speedY += 0.04 * delta;
+            }
         } else {
-            this.speedY += 0.03;
+            this.speedY += 0.03 * delta;
         }
     }
 
