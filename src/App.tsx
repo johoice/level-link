@@ -14,15 +14,21 @@ function App() {
             setTextures({ bunny: texture })
         );
     }, []);
+    console.log('rerender App');
 
     return (
         <div className="grid min-h-dvh w-full place-content-center p-8">
             {started ? (
                 textures ? (
-                    <MainView
-                        textures={textures}
-                        bunny={new Bunny(textures.bunny)}
-                    />
+                    <>
+                        <MainView
+                            textures={textures}
+                            bunny={new Bunny(textures.bunny)}
+                        />
+                        <button onClick={() => setStarted(false)}>
+                            Restart
+                        </button>
+                    </>
                 ) : (
                     <>Loading</>
                 )

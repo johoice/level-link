@@ -1,16 +1,26 @@
-import { Application, Texture } from 'pixi.js';
+import {
+    Application,
+    Container,
+    DisplayObject,
+    FederatedPointerEvent,
+    ICanvas,
+    Texture,
+} from 'pixi.js';
 import { Bunny } from '../player/Bunny.ts';
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Platform } from '../obstacles/Platform.ts';
 
-function checkCollisions(bunny: Bunny, platforms: Platform[]) {
+function checkCollisions(bunny: Bunny, container: Container<DisplayObject>) {
+    if (!container) return;
+
+    const platforms = container.children;
     const py = bunny.getSprite().y + bunny.getSprite().height / 2 + 0.01;
     const px = bunny.getSprite().x;
     for (const platform of platforms) {
-        const rx = platform.getSprite().x;
-        const ry = platform.getSprite().y;
-        const rw = platform.getSprite().width;
-        const rh = platform.getSprite().height;
+        const rx = platform.x;
+        const ry = platform.y;
+        const rw = 300;
+        const rh = 20;
         if (
             px >= rx && // right of the left edge AND
             px <= rx + rw && // left of the right edge AND
@@ -25,44 +35,75 @@ function checkCollisions(bunny: Bunny, platforms: Platform[]) {
 }
 
 function MainView(props: { textures: { bunny: Texture }; bunny: Bunny }) {
-    const app = new Application();
+    const [platforms, setPlatforms] = useState([
+        new Platform(200, 400, 300, 20, props.textures.bunny),
+        new Platform(100, 500, 300, 20, props.textures.bunny),
+        new Platform(400, 200, 300, 20, props.textures.bunny),
+        new Platform(50, 300, 300, 20, props.textures.bunny),
+    ]);
+    const container = useRef<Container>();
+    const appRef = useRef<Application<ICanvas>>();
 
     useEffect(() => {
+        function addPlatform(e: FederatedPointerEvent) {
+            const platform = new Platform(
+                e.globalX,
+                e.globalY,
+                300,
+                20,
+                props.textures.bunny
+            );
+            setPlatforms([...platforms, platform]);
+        }
+
+        if (!container.current) {
+            container.current = new Container();
+        }
+        if (!appRef.current) {
+            appRef.current = new Application();
+        }
+
+        const app = appRef.current;
+        const cont = container.current;
         // @ts-expect-error whatever
         document.getElementById('main-view')?.appendChild(app.view);
+
+        // This creates a texture from a 'bunny.png' image
+        const bunny = props.bunny.getSprite();
+
+        // Setup the position of the bunny
+        bunny.x = app.renderer.width / 2;
+        bunny.y = app.renderer.height / 2;
+
+        // Add the bunny to the scene we are building
+        app.stage.addChild(bunny);
+        platforms.forEach((platform) => {
+            cont.addChild(platform.getSprite());
+        });
+        app.stage.addChild(container.current);
+
+        app.stage.eventMode = 'static';
+        app.stage.hitArea = app.screen;
+        app.stage.on('mousedown', (event) => addPlatform(event));
+
+        // Listen for frame updates
+        app.ticker.add((delta) => {
+            if (checkCollisions(props.bunny, cont)) {
+                props.bunny.resetY();
+            }
+            props.bunny.tick(delta);
+        });
     }, []);
 
-    const mainView = document.getElementById('main-view');
-    if (mainView && !mainView.children) {
-        mainView?.appendChild(app.view);
-    }
-
-    // This creates a texture from a 'bunny.png' image
-    const bunny = props.bunny.getSprite();
-
-    // Setup the position of the bunny
-    bunny.x = app.renderer.width / 2;
-    bunny.y = app.renderer.height / 2;
-
-    // Add the bunny to the scene we are building
-    app.stage.addChild(bunny);
-    const platform = new Platform(200, 400, 300, 20, props.textures.bunny);
-    const platform2 = new Platform(100, 500, 300, 20, props.textures.bunny);
-    const platform3 = new Platform(400, 200, 300, 20, props.textures.bunny);
-    const platform4 = new Platform(50, 300, 300, 20, props.textures.bunny);
-    app.stage.addChild(platform.getSprite());
-    app.stage.addChild(platform2.getSprite());
-    app.stage.addChild(platform3.getSprite());
-    app.stage.addChild(platform4.getSprite());
-    const platforms = [platform, platform2, platform3, platform4];
-
-    // Listen for frame updates
-    app.ticker.add((delta) => {
-        if (checkCollisions(props.bunny, platforms)) {
-            props.bunny.resetY();
+    useEffect(() => {
+        if (container.current) {
+            const cont = container.current;
+            cont.removeChildren();
+            platforms.forEach((platform) =>
+                cont.addChild(platform.getSprite())
+            );
         }
-        props.bunny.tick(delta);
-    });
+    }, [platforms]);
 
     return <div id="main-view"></div>;
 }

@@ -17,7 +17,7 @@ export class Bunny {
             if (e.repeat) return;
             if (e.code === 'ArrowUp') {
                 if (this.airJumps > 0) {
-                    this.speedY = -2;
+                    this.speedY = -4;
                     this.airJumps -= 1;
                 }
             } else if (e.code === 'ArrowDown') {
@@ -52,11 +52,11 @@ export class Bunny {
         }
         this.sprite.y += this.speedY;
         if (this.speedY > 0) {
-            if (this.speedY < 3) {
-                this.speedY += 0.04 * delta;
+            if (this.speedY < 4) {
+                this.speedY += 0.08 * delta;
             }
         } else {
-            this.speedY += 0.03 * delta;
+            this.speedY += 0.1 * delta;
         }
     }
 
