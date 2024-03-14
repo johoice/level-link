@@ -1,14 +1,7 @@
-import {
-    Application,
-    Container,
-    DisplayObject,
-    FederatedPointerEvent,
-    ICanvas,
-    Texture,
-} from 'pixi.js';
-import { Bunny } from '../player/Bunny.ts';
-import { useEffect, useRef, useState } from 'react';
-import { Platform } from '../obstacles/Platform.ts';
+import {Application, Container, DisplayObject, FederatedPointerEvent, ICanvas, Texture,} from 'pixi.js';
+import {Bunny} from '../player/Bunny.ts';
+import {useEffect, useRef, useState} from 'react';
+import {Platform} from '../obstacles/Platform.ts';
 
 function checkCollisions(bunny: Bunny, container: Container<DisplayObject>) {
     if (!container) return;
@@ -92,6 +85,14 @@ function MainView(props: { textures: { bunny: Texture }; bunny: Bunny }) {
                 props.bunny.resetY();
             }
             props.bunny.tick(delta);
+            const platforms = cont.children;
+            platforms.forEach(plat => {
+                plat.x = plat.x + delta;
+                if (plat.x > app.renderer.width - 20) {
+                    plat.x = -20;
+                    plat.y = Math.random() * app.renderer.height;
+                }
+            })
         });
     }, []);
 

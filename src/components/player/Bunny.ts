@@ -1,4 +1,6 @@
-import { Sprite, Texture } from 'pixi.js';
+import {Sprite, Texture} from 'pixi.js';
+
+const airJumpMax = 2;
 
 export class Bunny {
     private readonly sprite: Sprite;
@@ -6,7 +8,7 @@ export class Bunny {
     private speedY: number = 0;
     private leftDown = false;
     private rightDown = false;
-    private airJumps = 1;
+    private airJumps = airJumpMax;
 
     constructor(texture: Texture) {
         this.sprite = new Sprite(texture);
@@ -70,9 +72,9 @@ export class Bunny {
 
     resetY() {
         if (this.speedY > 0) {
-            this.speedY = 0;
+            this.speedY = -this.speedY;
         }
-        this.airJumps = 1;
+        this.airJumps = airJumpMax;
     }
 
     getSpeed() {
